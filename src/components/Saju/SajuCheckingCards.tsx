@@ -104,7 +104,12 @@ const SajuCheckingCards = () => {
                   <Box key={idx}>
                     <Flex gap="8px">
                       {iconMapping[contentInfo.title]}
-                      <Text style={textStyles.Bold_16} color="#FFF" mb="16px">
+                      <Text
+                        className={hahmlet.className}
+                        style={textStyles.Bold_16}
+                        color="#FFF"
+                        mb="16px"
+                      >
                         {contentInfo.title}
                       </Text>
                     </Flex>
@@ -120,7 +125,12 @@ const SajuCheckingCards = () => {
               )}
 
               <Box>
-                <Text style={textStyles.Bold_16} color="#D6BDFF" mb="16px">
+                <Text
+                  className={hahmlet.className}
+                  style={textStyles.Bold_16}
+                  color="#D6BDFF"
+                  mb="16px"
+                >
                   카드 해석을 마치며...
                 </Text>
                 <Text

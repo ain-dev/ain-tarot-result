@@ -132,7 +132,12 @@ const TarotCheckingCards = () => {
           <Flex flexDirection="column" alignItems="center">
             <Flex flexDirection="column" gap="32px" mb="40px">
               <Box>
-                <Text style={textStyles.Bold_16} color="#FFF" mb="16px">
+                <Text
+                  className={hahmlet.className}
+                  style={textStyles.Bold_16}
+                  color="#FFF"
+                  mb="16px"
+                >
                   {cardsData.title}
                 </Text>
                 <Text

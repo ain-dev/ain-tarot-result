@@ -15,7 +15,7 @@ import { Box, Text, Flex, Button, Spinner } from '@chakra-ui/react';
 import { hahmlet } from '@/generated/fonts/fonts';
 import textStyles from '@/configs/textStyles';
 
-import petAnimationData from '@/public/assets//pet_card_back_image.json';
+import petAnimationData from '@/public/assets/pet_card_back_image.json';
 import animationData from '@/public/assets/card_back_image.json';
 
 const TarotCheckingCards = () => {

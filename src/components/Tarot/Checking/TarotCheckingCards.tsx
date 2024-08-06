@@ -69,7 +69,7 @@ const TarotCheckingCards = () => {
         {!isDescription && (
           <Lottie
             animationData={
-              category === '펫 마음' ? petAnimationData : animationData
+              cardsData.category === '펫 마음' ? petAnimationData : animationData
             }
             style={{ width: '360px', height: '130px' }}
             play

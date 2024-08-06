@@ -35,6 +35,10 @@ const TarotCheckingCards = () => {
   });
 
   const cardList = isFetching ? postCardList : cardsData?.cardList;
+  const isPetAnimation =
+    !isFetching && cardsData?.category === '펫 마음'
+      ? petAnimationData
+      : animationData;
 
   const handleClick = () => {
     setIsDescription(!isDescription);
@@ -68,9 +72,7 @@ const TarotCheckingCards = () => {
       >
         {!isDescription && (
           <Lottie
-            animationData={
-              cardsData.category === '펫 마음' ? petAnimationData : animationData
-            }
+            animationData={isPetAnimation}
             style={{ width: '360px', height: '130px' }}
             play
             loop={false}

@@ -93,6 +93,7 @@ const TarotCheckingCards = () => {
                 setFlipCount={setFlipCount}
                 isDescription={isDescription}
                 isMobile={isMobile}
+                category={cardsData?.category}
               />
             </Box>
           ))}

@@ -10,6 +10,7 @@ interface FlipCardProps {
   setFlipCount: React.Dispatch<React.SetStateAction<number>>;
   isDescription: boolean;
   isMobile: boolean;
+  category: string;
 }
 
 const TarotFlipCard = ({
@@ -17,9 +18,10 @@ const TarotFlipCard = ({
   setFlipCount,
   isDescription,
   isMobile,
+  category,
 }: FlipCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
-  const { category } = useTarotStore();
+  // const { category } = useTarotStore();
 
   const imageSize = isDescription
     ? { width: 294, height: 508 }

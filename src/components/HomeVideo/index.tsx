@@ -38,4 +38,3 @@ const HomeVideo = () => {
 };
 
 export default HomeVideo;
-

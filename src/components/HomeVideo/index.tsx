@@ -11,12 +11,11 @@ const HomeVideo = () => {
     router.push('/selectingfortune');
   };
 
-  // ✅ 10초 후 자동 이동 (테스트용)
+  // ✅ 10초 후 자동 이동
   useEffect(() => {
-    console.log("인트로 진입함!");  // 콘솔 확인용
     const timeout = setTimeout(() => {
       router.push('/selectingfortune');
-    }, 10 * 1000); // ⏰ 10초
+    }, 10 * 1000); // 10초
 
     return () => clearTimeout(timeout);
   }, []);
@@ -39,3 +38,4 @@ const HomeVideo = () => {
 };
 
 export default HomeVideo;
+

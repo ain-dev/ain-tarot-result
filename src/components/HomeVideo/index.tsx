@@ -15,7 +15,6 @@ const HomeVideo = () => {
   useEffect(() => {
     console.log("인트로 진입함!");  // 콘솔 확인용
     const timeout = setTimeout(() => {
-      console.log("10초 지남 → 페이지 이동 시도!");  // 콘솔 확인용
       router.push('/selectingfortune');
     }, 10 * 1000); // ⏰ 10초
 

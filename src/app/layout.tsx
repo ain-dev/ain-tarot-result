@@ -1,7 +1,11 @@
+'use client';
+
 import type { Metadata } from 'next';
 import { Providers } from '@/app/providers';
 import { pretendard } from '@/generated/fonts/fonts';
 import { Box } from '@chakra-ui/react';
+import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'Mind Tarot',
@@ -13,6 +17,29 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const resetTimer = () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        router.push('/home'); // ← 홈(인트로) 경로 수정
+      }, 10 * 60 * 1000);
+    };
+
+    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart'];
+    events.forEach((event) => window.addEventListener(event, resetTimer));
+    resetTimer();
+
+    return () => {
+      events.forEach((event) =>
+        window.removeEventListener(event, resetTimer)
+      );
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [router]);
+
   return (
     <html lang="ko">
       <body className={pretendard.className}>

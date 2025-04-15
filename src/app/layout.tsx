@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import type { Metadata } from 'next';
 import { Providers } from '@/app/providers';
@@ -24,7 +24,7 @@ export default function RootLayout({
     const resetTimer = () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
-        router.push('/home'); // ← 홈(인트로) 경로 수정
+        router.push('/home'); // 인트로 주소로 수정
       }, 10 * 60 * 1000);
     };
 
@@ -33,9 +33,7 @@ export default function RootLayout({
     resetTimer();
 
     return () => {
-      events.forEach((event) =>
-        window.removeEventListener(event, resetTimer)
-      );
+      events.forEach((event) => window.removeEventListener(event, resetTimer));
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, [router]);

@@ -1,16 +1,10 @@
 'use client'
 
-import type { Metadata } from 'next';
 import { Providers } from '@/app/providers';
 import { pretendard } from '@/generated/fonts/fonts';
 import { Box } from '@chakra-ui/react';
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-
-export const metadata: Metadata = {
-  title: 'Mind Tarot',
-  description: 'Tarot application for mental health',
-};
 
 export default function RootLayout({
   children,
@@ -23,9 +17,10 @@ export default function RootLayout({
   useEffect(() => {
     const resetTimer = () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+
       timerRef.current = setTimeout(() => {
-        router.push('/home'); // 인트로 주소로 수정
-      }, 10 * 60 * 1000);
+        router.push('/home'); // ← 인트로 화면 주소로 수정
+      }, 10 * 60 * 1000); // 10분 (테스트용으로는 10초로 바꿔도 됨)
     };
 
     const events = ['mousemove', 'mousedown', 'keydown', 'touchstart'];

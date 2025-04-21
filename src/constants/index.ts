@@ -5,10 +5,10 @@ export const selectiongFortuneCard = [
     cardId: 1,
     title: '서양 사주',
     image: '/images/selected_saju_image.png',
-    content1: '당신이 태어난 날을 상징하는 타로카드를 찾고,',
-    content2: '인생 전반에 걸친 운세와 성향을 탐구합니다.',
+    content1: '당신의 생년월일을 입력하면,',
+    content2: '운명을 상징하는 타로카드를 보여드립니다.',
     description: ['직업운', '학업운', '금전운', '연애운', '건강운'],
-    price: '15,000',
+    price: '9,000',
   },
   {
     cardId: 2,
@@ -17,7 +17,7 @@ export const selectiongFortuneCard = [
     content1: '고민이 있으시다면 타로카드의 지혜로 답을 찾아보세요.',
     content2: '더 나은 미래를 위한 방향을 제시해 드립니다.',
     description: ['직업운', '학업운', '금전운', '연애운', '건강운'],
-    price: '5,000',
+    price: '4,000',
   },
 ];
 

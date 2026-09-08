@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { getCards } from '@/configs/axios/tarot/tarot.api';
@@ -8,15 +9,14 @@ import { IsMobileDevice } from '@/utils/IsMobileDevice';
 import useTarotStore from '@/app/store/tarotUserInfo';
 
 import TarotFlipCard from '@/components/Tarot/Checking/TarotFlipCard';
-import Lottie from 'react-lottie-player';
+// react-lottie-player touches `document` at module scope, which breaks the SSR
+// prerender pass. Load it client-side only.
+const Lottie = dynamic(() => import('react-lottie-player'), { ssr: false });
 
 import { CardType } from '@/model/cards';
 import { Box, Text, Flex, Button, Spinner } from '@chakra-ui/react';
 import { hahmlet } from '@/generated/fonts/fonts';
 import textStyles from '@/configs/textStyles';
-
-import petAnimationData from '@/public/assets/pet_card_back_image.json';
-import animationData from '@/public/assets/card_back_image.json';
 
 const TarotCheckingCards = () => {
   const [isDescription, setIsDescription] = useState(false);
@@ -35,10 +35,10 @@ const TarotCheckingCards = () => {
   });
 
   const cardList = isFetching ? postCardList : cardsData?.cardList;
-  const isPetAnimation =
+  const cardBackAnimationPath =
     !isFetching && cardsData?.category === '펫 마음'
-      ? petAnimationData
-      : animationData;
+      ? '/assets/pet_card_back_image.json'
+      : '/assets/card_back_image.json';
 
   const handleClick = () => {
     setIsDescription(!isDescription);
@@ -72,7 +72,8 @@ const TarotCheckingCards = () => {
       >
         {!isDescription && (
           <Lottie
-            animationData={isPetAnimation}
+            // 로티 JSON(6.8MB)을 번들에 굽지 않고 public 정적 파일을 런타임 로드
+            path={cardBackAnimationPath}
             style={{ width: '360px', height: '130px' }}
             play
             loop={false}

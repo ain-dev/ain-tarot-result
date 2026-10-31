@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    instrumentationHook: true,
-  },
   images: {
     formats: ['image/avif', 'image/webp'],
     // Hosts that card / QR images returned by the result API may live on.

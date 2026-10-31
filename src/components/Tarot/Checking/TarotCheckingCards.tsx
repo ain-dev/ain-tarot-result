@@ -29,7 +29,7 @@ const TarotCheckingCards = () => {
   const taskId = params.id as string;
 
   const { data: cardsData, isFetching } = useQuery({
-    queryKey: ['tarotCards'],
+    queryKey: ['tarotCards', taskId],
     queryFn: () => getCards(taskId),
     retry: 6,
   });
@@ -87,7 +87,7 @@ const TarotCheckingCards = () => {
           alignItems="center"
           gap="40px"
         >
-          {cardList.slice(0, pickupCards)?.map((card: CardType) => (
+          {(cardList ?? []).slice(0, pickupCards).map((card: CardType) => (
             <Box key={card.id}>
               <TarotFlipCard
                 imageSrc={card.src}

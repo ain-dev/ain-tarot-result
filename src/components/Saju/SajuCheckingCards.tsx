@@ -26,7 +26,7 @@ const SajuCheckingCards = () => {
   const taskId = params.id as string;
 
   const { data: cardsData, isFetching } = useQuery({
-    queryKey: ['sajuCards'],
+    queryKey: ['sajuCards', taskId],
     queryFn: () => getCards(taskId),
     retry: 8,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),

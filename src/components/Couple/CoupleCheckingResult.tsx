@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -72,6 +73,35 @@ const CategoryBlock = ({
 const MAX_GENERATING_POLLS = 40;
 const MAX_UNAVAILABLE_RETRIES = 3;
 
+// TTS URLs are built from the backend's BACKEND_URL, which defaults to a
+// kiosk-local address (http://localhost:8000). Such a URL cannot play on the
+// customer's phone, so skip it instead of showing a broken player.
+const UNREACHABLE_AUDIO_HOSTS = [
+  'localhost',
+  '127.0.0.1',
+  '0.0.0.0',
+  'backend',
+];
+
+const isPlayableAudioUrl = (url?: string): url is string => {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    if (UNREACHABLE_AUDIO_HOSTS.includes(parsed.hostname)) return false;
+    // An http: file on an https: page is blocked as mixed content.
+    if (
+      typeof window !== 'undefined' &&
+      window.location.protocol === 'https:' &&
+      parsed.protocol === 'http:'
+    ) {
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const GENDER_STYLE = {
   male: {
     accent: '#8FCBFF',
@@ -138,6 +168,7 @@ const PersonColumn = ({
 const CoupleCheckingResult = () => {
   const params = useParams();
   const taskId = params.id as string;
+  const [audioFailed, setAudioFailed] = useState(false);
 
   const {
     data: resultData,
@@ -169,7 +200,16 @@ const CoupleCheckingResult = () => {
     lastError.kind === 'generating';
   const isNotFound =
     isError && isCoupleResultError(error) && error.kind === 'notFound';
-  const hasResultFailed = !isFetching && !resultData && !isNotFound;
+  // No HTTP response at all (network/CORS failure, e.g. a backend 500 without
+  // CORS headers for an unknown id) after the retry cap: most likely the id is
+  // unknown or expired, so show that guidance, but still offer a retry.
+  const isUnreachable =
+    isError &&
+    isCoupleResultError(error) &&
+    error.kind === 'unavailable' &&
+    error.status === undefined;
+  const hasResultFailed =
+    !isFetching && !resultData && !isNotFound && !isUnreachable;
 
   return (
     <Flex
@@ -215,7 +255,7 @@ const CoupleCheckingResult = () => {
         </Flex>
       )}
 
-      {!isFetching && isNotFound && (
+      {!isFetching && (isNotFound || isUnreachable) && (
         <Flex
           flexDirection="column"
           alignItems="center"
@@ -234,6 +274,16 @@ const CoupleCheckingResult = () => {
             결과는 생성 후 3일 동안만 볼 수 있어요.
             {'\n'}QR 코드를 다시 확인해 주세요.
           </Text>
+          {isUnreachable && (
+            <Button
+              mt="8px"
+              onClick={() => refetch()}
+              borderRadius="100px"
+              bg="#D0BCFF"
+            >
+              <Text color="#381E72">다시 시도</Text>
+            </Button>
+          )}
         </Flex>
       )}
 
@@ -310,11 +360,13 @@ const CoupleCheckingResult = () => {
                 </Text>
               </Box>
             )}
-            {resultData.compatTtsUrl && (
+            {isPlayableAudioUrl(resultData.compatTtsUrl) && !audioFailed && (
               // eslint-disable-next-line jsx-a11y/media-has-caption
               <audio
                 controls
+                preload="metadata"
                 src={resultData.compatTtsUrl}
+                onError={() => setAudioFailed(true)}
                 style={{ width: '100%', marginTop: '16px' }}
               />
             )}

@@ -1,6 +1,15 @@
 import { Providers } from '@/app/providers';
 import { pretendard } from '@/generated/fonts/fonts';
 import { Box } from '@chakra-ui/react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: { default: 'Mind Tarot', template: '%s | Mind Tarot' },
+  description:
+    '키오스크에서 받은 타로·사주·커플궁합 결과를 휴대폰에서 확인하세요.',
+  // Each result URL belongs to one customer; keep them out of search engines.
+  robots: { index: false, follow: false },
+};
 
 // No idle-timeout redirect here: this app is the result page customers open on
 // their own phone after scanning the kiosk QR. The kiosk-style "go back to the

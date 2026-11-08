@@ -5,6 +5,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ChakraProvider } from '@chakra-ui/react';
 
 import { QueryClient } from '@tanstack/react-query';
+import EmotionRegistry from '@/app/EmotionRegistry';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Create the client once per browser session; creating it in the render body
@@ -25,7 +26,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <>
       <QueryClientProvider client={queryClient}>
-        <ChakraProvider>{children}</ChakraProvider>
+        <EmotionRegistry>
+          <ChakraProvider>{children}</ChakraProvider>
+        </EmotionRegistry>
       </QueryClientProvider>
     </>
   );

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toResultError } from '@/configs/axios/resultError';
 
 export async function postSajuSelect(userSelect: {}) {
   try {
@@ -26,7 +27,7 @@ export async function postSajuSelect(userSelect: {}) {
 export async function getCards(taskId: string) {
   try {
     const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/saju/result/${taskId}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/saju/result/${encodeURIComponent(taskId)}`,
       {
         headers: {
           'Cache-Control': 'no-store',
@@ -36,6 +37,6 @@ export async function getCards(taskId: string) {
 
     return res.data;
   } catch (error) {
-    throw new Error('Failed to fetch data');
+    throw toResultError(error);
   }
 }

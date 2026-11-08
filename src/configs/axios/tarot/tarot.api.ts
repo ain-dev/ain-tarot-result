@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toResultError } from '@/configs/axios/resultError';
 
 export async function postSpeech(speechInput: any) {
   try {
@@ -44,7 +45,7 @@ export async function postTarotSelect(userSelect: any) {
 export async function getCards(taskId: string) {
   try {
     const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/tarot/result/${taskId}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/tarot/result/${encodeURIComponent(taskId)}`,
       {
         headers: {
           'Cache-Control': 'no-store',
@@ -56,7 +57,6 @@ export async function getCards(taskId: string) {
     // You can return Date, Map, Set, etc.
     return res.data;
   } catch (error) {
-    // This will activate the closest `error.js` Error Boundary
-    throw new Error('Failed to fetch data');
+    throw toResultError(error);
   }
 }

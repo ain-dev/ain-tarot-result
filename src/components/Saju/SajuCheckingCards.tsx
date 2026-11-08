@@ -1,15 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type JSX } from 'react';
 import { useParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { decodeRouteParam } from '@/utils/routeParam';
 import { getCards } from '@/configs/axios/saju/saju.api';
+import { useResultQuery } from '@/utils/useResultQuery';
 import { IsMobileDevice } from '@/utils/IsMobileDevice';
 import useSajuStore from '@/app/store/sajuUserInfo';
 
 import SajuFlipCard from '@/components/Saju/SajuFlipCard';
+import ResultErrorState, {
+  NETWORK_ERROR_GUIDE,
+} from '@/components/common/ResultErrorState';
 
-import { CardType, CardDetailType } from '@/model/cards';
+import { CardType, CardDetailType, SajuResult } from '@/model/cards';
 import { Box, Text, Flex, Button, Spinner } from '@chakra-ui/react';
 import { hahmlet } from '@/generated/fonts/fonts';
 import { CareerIcon, MoneyIcon, HealthyIcon } from '@/generated/CustomIcon';
@@ -23,16 +27,21 @@ const SajuCheckingCards = () => {
   const isMobile = IsMobileDevice('(max-width: 550px)');
   const params = useParams();
 
-  const taskId = params.id as string;
+  const taskId = decodeRouteParam(params.id);
 
-  const { data: cardsData, isFetching } = useQuery({
-    queryKey: ['sajuCards'],
-    queryFn: () => getCards(taskId),
-    retry: 8,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-  });
+  const {
+    data: cardsData,
+    isFetching,
+    isGenerating,
+    errorState,
+    refetch,
+  } = useResultQuery<SajuResult>(['sajuCards', taskId], () => getCards(taskId));
+  const hasError = errorState !== null;
 
-  const cardList = isFetching ? postCardList : cardsData?.cardList;
+  // Key the UI on whether data exists, not on isFetching: a background
+  // refetch (e.g. on network reconnect) must not blank the cards.
+  const isLoading = !cardsData;
+  const cardList = cardsData?.cardList ?? postCardList;
   const cardContentsInfo = cardsData?.contentsInfo;
 
   const iconMapping: { [key: string]: JSX.Element } = {
@@ -42,7 +51,7 @@ const SajuCheckingCards = () => {
   };
 
   const handleClick = () => {
-    if (!isFetching) setIsDescription(!isDescription);
+    if (cardsData) setIsDescription(!isDescription);
   };
 
   return (
@@ -76,23 +85,44 @@ const SajuCheckingCards = () => {
         ))}
       </Flex>
 
-      {!isDescription && (
+      {hasError && (
+        <ResultErrorState
+          variant={errorState === 'unreachable' ? 'failed' : errorState}
+          description={
+            errorState === 'unreachable' ? NETWORK_ERROR_GUIDE : undefined
+          }
+          onRetry={errorState === 'notFound' ? undefined : () => refetch()}
+        />
+      )}
+
+      {!isDescription && !hasError && (
         <Button
           w="276px"
           h="48px"
           onClick={handleClick}
           borderRadius="100px"
-          bg={isFetching ? '#353336' : '#D0BCFF'}
+          bg={isLoading ? '#353336' : '#D0BCFF'}
         >
-          {isFetching ? (
+          {isLoading ? (
             <>
-              <Spinner size="md" mr="8px" />
-              <Text color="#787579">로딩중</Text>
+              <Spinner size="md" mr="8px" color="#E6E0E9" />
+              <Text color="#CAC4D0">로딩중</Text>
             </>
           ) : (
             <Text color="#381E72">설명보기</Text>
           )}
         </Button>
+      )}
+
+      {isFetching && isGenerating && (
+        <Text
+          color="#D6BDFF"
+          style={textStyles.Regular_16}
+          textAlign="center"
+          mt="16px"
+        >
+          결과를 만들고 있습니다... 잠시만 기다려 주세요.
+        </Text>
       )}
 
       {isDescription && (

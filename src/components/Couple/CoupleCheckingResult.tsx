@@ -194,7 +194,9 @@ const CoupleCheckingResult = () => {
         커플궁합 결과입니다.
       </Text>
 
-      {isFetching && (
+      {/* Only the first load shows the spinner; a background refetch (e.g. on
+          network reconnect) keeps the result on screen. */}
+      {isFetching && !resultData && (
         <Flex
           flexDirection="column"
           alignItems="center"
@@ -240,7 +242,7 @@ const CoupleCheckingResult = () => {
         <ResultErrorState variant={errorState} onRetry={() => refetch()} />
       )}
 
-      {!isFetching && resultData && (
+      {resultData && (
         <Flex flexDirection="column" gap="28px" w="100%" maxW="520px">
           <PersonColumn
             label="남자"

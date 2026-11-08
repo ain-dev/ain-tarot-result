@@ -38,7 +38,10 @@ const SajuCheckingCards = () => {
   } = useResultQuery<SajuResult>(['sajuCards', taskId], () => getCards(taskId));
   const hasError = errorState !== null;
 
-  const cardList = isFetching ? postCardList : cardsData?.cardList;
+  // Key the UI on whether data exists, not on isFetching: a background
+  // refetch (e.g. on network reconnect) must not blank the cards.
+  const isLoading = !cardsData;
+  const cardList = cardsData?.cardList ?? postCardList;
   const cardContentsInfo = cardsData?.contentsInfo;
 
   const iconMapping: { [key: string]: JSX.Element } = {
@@ -48,7 +51,7 @@ const SajuCheckingCards = () => {
   };
 
   const handleClick = () => {
-    if (!isFetching && cardsData) setIsDescription(!isDescription);
+    if (cardsData) setIsDescription(!isDescription);
   };
 
   return (
@@ -98,9 +101,9 @@ const SajuCheckingCards = () => {
           h="48px"
           onClick={handleClick}
           borderRadius="100px"
-          bg={isFetching ? '#353336' : '#D0BCFF'}
+          bg={isLoading ? '#353336' : '#D0BCFF'}
         >
-          {isFetching ? (
+          {isLoading ? (
             <>
               <Spinner size="md" mr="8px" color="#E6E0E9" />
               <Text color="#CAC4D0">로딩중</Text>

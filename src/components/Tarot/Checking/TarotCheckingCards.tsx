@@ -43,9 +43,12 @@ const TarotCheckingCards = () => {
   );
   const hasError = errorState !== null;
 
-  const cardList = isFetching ? postCardList : cardsData?.cardList;
+  // Key the UI on whether data exists, not on isFetching: a background
+  // refetch (e.g. on network reconnect) must not blank the cards.
+  const isLoading = !cardsData;
+  const cardList = cardsData?.cardList ?? postCardList;
   const cardBackAnimationPath =
-    !isFetching && cardsData?.category === '펫 마음'
+    cardsData?.category === '펫 마음'
       ? '/assets/pet_card_back_image.json'
       : '/assets/card_back_image.json';
 
@@ -149,10 +152,10 @@ const TarotCheckingCards = () => {
           w="276px"
           h="48px"
           borderRadius="100px"
-          bg={isFetching ? '#353336' : '#D0BCFF'}
+          bg={isLoading ? '#353336' : '#D0BCFF'}
           onClick={handleClick}
         >
-          {isFetching ? (
+          {isLoading ? (
             <>
               <Spinner size="md" mr="8px" color="#E6E0E9" />
               <Text color="#CAC4D0">로딩중</Text>

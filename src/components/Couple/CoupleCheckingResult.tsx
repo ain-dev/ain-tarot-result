@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
+import { decodeRouteParam } from '@/utils/routeParam';
 import { getCoupleResult } from '@/configs/axios/couple/couple.api';
 import { useResultQuery } from '@/utils/useResultQuery';
 import ResultErrorState from '@/components/common/ResultErrorState';
@@ -160,7 +161,7 @@ const PersonColumn = ({
 
 const CoupleCheckingResult = () => {
   const params = useParams();
-  const taskId = params.id as string;
+  const taskId = decodeRouteParam(params.id);
   const [audioFailed, setAudioFailed] = useState(false);
 
   const {

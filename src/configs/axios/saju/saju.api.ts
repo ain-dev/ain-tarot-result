@@ -27,7 +27,7 @@ export async function postSajuSelect(userSelect: {}) {
 export async function getCards(taskId: string) {
   try {
     const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/saju/result/${taskId}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/saju/result/${encodeURIComponent(taskId)}`,
       {
         headers: {
           'Cache-Control': 'no-store',

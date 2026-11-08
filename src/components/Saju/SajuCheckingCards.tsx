@@ -2,6 +2,7 @@
 
 import { useState, type JSX } from 'react';
 import { useParams } from 'next/navigation';
+import { decodeRouteParam } from '@/utils/routeParam';
 import { getCards } from '@/configs/axios/saju/saju.api';
 import { useResultQuery } from '@/utils/useResultQuery';
 import { IsMobileDevice } from '@/utils/IsMobileDevice';
@@ -26,7 +27,7 @@ const SajuCheckingCards = () => {
   const isMobile = IsMobileDevice('(max-width: 550px)');
   const params = useParams();
 
-  const taskId = params.id as string;
+  const taskId = decodeRouteParam(params.id);
 
   const {
     data: cardsData,

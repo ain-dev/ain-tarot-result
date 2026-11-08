@@ -45,7 +45,7 @@ export async function postTarotSelect(userSelect: any) {
 export async function getCards(taskId: string) {
   try {
     const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/tarot/result/${taskId}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/tarot/result/${encodeURIComponent(taskId)}`,
       {
         headers: {
           'Cache-Control': 'no-store',

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
+import { decodeRouteParam } from '@/utils/routeParam';
 import { getCards } from '@/configs/axios/tarot/tarot.api';
 import { useResultQuery } from '@/utils/useResultQuery';
 import { IsMobileDevice } from '@/utils/IsMobileDevice';
@@ -29,7 +30,7 @@ const TarotCheckingCards = () => {
   const { postCardList, category } = useTarotStore();
   const isMobile = IsMobileDevice('(max-width: 500px)');
   const params = useParams();
-  const taskId = params.id as string;
+  const taskId = decodeRouteParam(params.id);
 
   const {
     data: cardsData,

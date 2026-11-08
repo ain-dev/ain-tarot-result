@@ -102,8 +102,8 @@ const SajuCheckingCards = () => {
         >
           {isFetching ? (
             <>
-              <Spinner size="md" mr="8px" />
-              <Text color="#787579">로딩중</Text>
+              <Spinner size="md" mr="8px" color="#E6E0E9" />
+              <Text color="#CAC4D0">로딩중</Text>
             </>
           ) : (
             <Text color="#381E72">설명보기</Text>

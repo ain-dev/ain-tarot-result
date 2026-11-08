@@ -203,7 +203,14 @@ const CoupleCheckingResult = () => {
           textAlign="center"
         >
           <Flex alignItems="center" gap="8px">
-            <Spinner size="md" />
+            <Spinner
+              size="md"
+              // Chakra defaults to the body text colour (gray.800), which is
+              // almost invisible on the dark background.
+              color="#D6BDFF"
+              emptyColor="whiteAlpha.300"
+              thickness="3px"
+            />
             <Text color="#FFF">
               {isGenerating
                 ? '결과를 만들고 있습니다...'

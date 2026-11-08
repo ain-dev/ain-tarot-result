@@ -21,6 +21,7 @@ const TarotFlipCard = ({
   category,
 }: FlipCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [hasBeenRevealed, setHasBeenRevealed] = useState(false);
   // const { category } = useTarotStore();
 
   const imageSize = isDescription
@@ -29,7 +30,12 @@ const TarotFlipCard = ({
 
   const handleClick = () => {
     setIsFlipped(!isFlipped);
-    setFlipCount((prev: number) => prev + 1);
+    // Count each card once, the first time it is turned face up. Counting
+    // every tap let one card tapped three times unlock "설명 보기".
+    if (!hasBeenRevealed) {
+      setHasBeenRevealed(true);
+      setFlipCount((prev: number) => prev + 1);
+    }
   };
 
   return (

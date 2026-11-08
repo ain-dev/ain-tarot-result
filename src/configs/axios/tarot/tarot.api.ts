@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toResultError } from '@/configs/axios/resultError';
 
 export async function postSpeech(speechInput: any) {
   try {
@@ -56,7 +57,6 @@ export async function getCards(taskId: string) {
     // You can return Date, Map, Set, etc.
     return res.data;
   } catch (error) {
-    // This will activate the closest `error.js` Error Boundary
-    throw new Error('Failed to fetch data');
+    throw toResultError(error);
   }
 }

@@ -2,15 +2,12 @@
 
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import {
-  CoupleResultError,
-  getCoupleResult,
-  isCoupleResultError,
-} from '@/configs/axios/couple/couple.api';
+import { getCoupleResult } from '@/configs/axios/couple/couple.api';
+import { useResultQuery } from '@/utils/useResultQuery';
+import ResultErrorState from '@/components/common/ResultErrorState';
 
 import { CardDetailType } from '@/model/cards';
-import { Box, Text, Flex, Spinner, Button } from '@chakra-ui/react';
+import { Box, Text, Flex, Spinner } from '@chakra-ui/react';
 import { hahmlet } from '@/generated/fonts/fonts';
 import textStyles from '@/configs/textStyles';
 import { breakAfterSentences } from '@/utils/textFormat';
@@ -68,10 +65,6 @@ const CategoryBlock = ({
     </Flex>
   </Box>
 );
-
-// 418 polling: 2s → ×1.5 backoff capped at 10s, ~6 minutes in total.
-const MAX_GENERATING_POLLS = 40;
-const MAX_UNAVAILABLE_RETRIES = 3;
 
 // TTS URLs are built from the backend's BACKEND_URL, which defaults to a
 // kiosk-local address (http://localhost:8000). Such a URL cannot play on the
@@ -172,44 +165,13 @@ const CoupleCheckingResult = () => {
 
   const {
     data: resultData,
-    error,
-    failureReason,
     isFetching,
-    isError,
+    isGenerating,
+    errorState,
     refetch,
-  } = useQuery<CoupleResult, CoupleResultError>({
-    queryKey: ['coupleResult', taskId],
-    queryFn: () => getCoupleResult(taskId),
-    retry: (failureCount, err) => {
-      if (err.kind === 'notFound') return false; // unknown id or expired
-      if (err.kind === 'generating') return failureCount < MAX_GENERATING_POLLS;
-      return failureCount < MAX_UNAVAILABLE_RETRIES;
-    },
-    retryDelay: (attemptIndex, err) =>
-      isCoupleResultError(err) && err.kind === 'generating'
-        ? Math.min(2000 * 1.5 ** attemptIndex, 10000)
-        : Math.min(1000 * 2 ** attemptIndex, 30000),
-  });
-
-  // While TanStack Query is retrying, the latest error is exposed as
-  // `failureReason` (not `error`), so use it to tell "still generating" apart.
-  const lastError = error ?? failureReason;
-  const isGenerating =
-    !resultData &&
-    isCoupleResultError(lastError) &&
-    lastError.kind === 'generating';
-  const isNotFound =
-    isError && isCoupleResultError(error) && error.kind === 'notFound';
-  // No HTTP response at all (network/CORS failure, e.g. a backend 500 without
-  // CORS headers for an unknown id) after the retry cap: most likely the id is
-  // unknown or expired, so show that guidance, but still offer a retry.
-  const isUnreachable =
-    isError &&
-    isCoupleResultError(error) &&
-    error.kind === 'unavailable' &&
-    error.status === undefined;
-  const hasResultFailed =
-    !isFetching && !resultData && !isNotFound && !isUnreachable;
+  } = useResultQuery<CoupleResult>(['coupleResult', taskId], () =>
+    getCoupleResult(taskId),
+  );
 
   return (
     <Flex
@@ -255,55 +217,19 @@ const CoupleCheckingResult = () => {
         </Flex>
       )}
 
-      {!isFetching && (isNotFound || isUnreachable) && (
-        <Flex
-          flexDirection="column"
-          alignItems="center"
-          gap="8px"
-          mt="40px"
-          textAlign="center"
-        >
-          <Text color="#FFF" style={textStyles.Bold_18}>
-            결과를 찾을 수 없습니다.
-          </Text>
-          <Text
-            color="#D6BDFF"
-            style={textStyles.Regular_16}
-            whiteSpace="pre-line"
-          >
-            결과는 생성 후 3일 동안만 볼 수 있어요.
-            {'\n'}QR 코드를 다시 확인해 주세요.
-          </Text>
-          {isUnreachable && (
-            <Button
-              mt="8px"
-              onClick={() => refetch()}
-              borderRadius="100px"
-              bg="#D0BCFF"
-            >
-              <Text color="#381E72">다시 시도</Text>
-            </Button>
-          )}
-        </Flex>
+      {/* No HTTP response at all (network/CORS failure, e.g. a backend 500
+          without CORS headers for an unknown id) after the retry cap: most
+          likely the id is unknown or expired, so show that guidance, but still
+          offer a retry. */}
+      {(errorState === 'notFound' || errorState === 'unreachable') && (
+        <ResultErrorState
+          variant="notFound"
+          onRetry={errorState === 'unreachable' ? () => refetch() : undefined}
+        />
       )}
 
-      {hasResultFailed && (
-        <Flex
-          flexDirection="column"
-          alignItems="center"
-          gap="12px"
-          mt="40px"
-          textAlign="center"
-        >
-          <Text color="#FFF" style={textStyles.Regular_16}>
-            {isGenerating
-              ? '결과 준비가 평소보다 오래 걸리고 있습니다.'
-              : '결과를 불러오지 못했습니다.'}
-          </Text>
-          <Button onClick={() => refetch()} borderRadius="100px" bg="#D0BCFF">
-            <Text color="#381E72">다시 시도</Text>
-          </Button>
-        </Flex>
+      {(errorState === 'delayed' || errorState === 'failed') && (
+        <ResultErrorState variant={errorState} onRetry={() => refetch()} />
       )}
 
       {!isFetching && resultData && (

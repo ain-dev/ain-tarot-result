@@ -2,14 +2,17 @@
 
 import { useState, type JSX } from 'react';
 import { useParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
 import { getCards } from '@/configs/axios/saju/saju.api';
+import { useResultQuery } from '@/utils/useResultQuery';
 import { IsMobileDevice } from '@/utils/IsMobileDevice';
 import useSajuStore from '@/app/store/sajuUserInfo';
 
 import SajuFlipCard from '@/components/Saju/SajuFlipCard';
+import ResultErrorState, {
+  NETWORK_ERROR_GUIDE,
+} from '@/components/common/ResultErrorState';
 
-import { CardType, CardDetailType } from '@/model/cards';
+import { CardType, CardDetailType, SajuResult } from '@/model/cards';
 import { Box, Text, Flex, Button, Spinner } from '@chakra-ui/react';
 import { hahmlet } from '@/generated/fonts/fonts';
 import { CareerIcon, MoneyIcon, HealthyIcon } from '@/generated/CustomIcon';
@@ -25,12 +28,14 @@ const SajuCheckingCards = () => {
 
   const taskId = params.id as string;
 
-  const { data: cardsData, isFetching } = useQuery({
-    queryKey: ['sajuCards', taskId],
-    queryFn: () => getCards(taskId),
-    retry: 8,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-  });
+  const {
+    data: cardsData,
+    isFetching,
+    isGenerating,
+    errorState,
+    refetch,
+  } = useResultQuery<SajuResult>(['sajuCards', taskId], () => getCards(taskId));
+  const hasError = errorState !== null;
 
   const cardList = isFetching ? postCardList : cardsData?.cardList;
   const cardContentsInfo = cardsData?.contentsInfo;
@@ -42,7 +47,7 @@ const SajuCheckingCards = () => {
   };
 
   const handleClick = () => {
-    if (!isFetching) setIsDescription(!isDescription);
+    if (!isFetching && cardsData) setIsDescription(!isDescription);
   };
 
   return (
@@ -76,7 +81,17 @@ const SajuCheckingCards = () => {
         ))}
       </Flex>
 
-      {!isDescription && (
+      {hasError && (
+        <ResultErrorState
+          variant={errorState === 'unreachable' ? 'failed' : errorState}
+          description={
+            errorState === 'unreachable' ? NETWORK_ERROR_GUIDE : undefined
+          }
+          onRetry={errorState === 'notFound' ? undefined : () => refetch()}
+        />
+      )}
+
+      {!isDescription && !hasError && (
         <Button
           w="276px"
           h="48px"
@@ -93,6 +108,17 @@ const SajuCheckingCards = () => {
             <Text color="#381E72">설명보기</Text>
           )}
         </Button>
+      )}
+
+      {isFetching && isGenerating && (
+        <Text
+          color="#D6BDFF"
+          style={textStyles.Regular_16}
+          textAlign="center"
+          mt="16px"
+        >
+          결과를 만들고 있습니다... 잠시만 기다려 주세요.
+        </Text>
       )}
 
       {isDescription && (

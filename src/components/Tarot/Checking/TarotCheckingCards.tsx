@@ -3,17 +3,20 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
 import { getCards } from '@/configs/axios/tarot/tarot.api';
+import { useResultQuery } from '@/utils/useResultQuery';
 import { IsMobileDevice } from '@/utils/IsMobileDevice';
 import useTarotStore from '@/app/store/tarotUserInfo';
 
 import TarotFlipCard from '@/components/Tarot/Checking/TarotFlipCard';
+import ResultErrorState, {
+  NETWORK_ERROR_GUIDE,
+} from '@/components/common/ResultErrorState';
 // react-lottie-player touches `document` at module scope, which breaks the SSR
 // prerender pass. Load it client-side only.
 const Lottie = dynamic(() => import('react-lottie-player'), { ssr: false });
 
-import { CardType } from '@/model/cards';
+import { CardType, TarotResult } from '@/model/cards';
 import { Box, Text, Flex, Button, Spinner } from '@chakra-ui/react';
 import { hahmlet } from '@/generated/fonts/fonts';
 import textStyles from '@/configs/textStyles';
@@ -28,11 +31,16 @@ const TarotCheckingCards = () => {
   const params = useParams();
   const taskId = params.id as string;
 
-  const { data: cardsData, isFetching } = useQuery({
-    queryKey: ['tarotCards', taskId],
-    queryFn: () => getCards(taskId),
-    retry: 6,
-  });
+  const {
+    data: cardsData,
+    isFetching,
+    isGenerating,
+    errorState,
+    refetch,
+  } = useResultQuery<TarotResult>(['tarotCards', taskId], () =>
+    getCards(taskId),
+  );
+  const hasError = errorState !== null;
 
   const cardList = isFetching ? postCardList : cardsData?.cardList;
   const cardBackAnimationPath =
@@ -58,48 +66,71 @@ const TarotCheckingCards = () => {
         mb="40px"
         color="#FFF"
       >
-        {isDescription
+        {isDescription || hasError
           ? '당신의 타로 운세 결과입니다.'
           : '고민에 집중해서 3장의 카드를 선택해 주세요.'}
       </Text>
 
-      <Flex
-        as="figure"
-        flexDirection="column"
-        justifyContent="center"
-        alignItems="center"
-        mb="40px"
-      >
-        {!isDescription && (
-          <Lottie
-            // 로티 JSON(6.8MB)을 번들에 굽지 않고 public 정적 파일을 런타임 로드
-            path={cardBackAnimationPath}
-            style={{ width: '360px', height: '130px' }}
-            play
-            loop={false}
-            speed={2}
-            onClick={handleClickCardList}
-          />
-        )}
+      {hasError && (
+        <ResultErrorState
+          variant={errorState === 'unreachable' ? 'failed' : errorState}
+          description={
+            errorState === 'unreachable' ? NETWORK_ERROR_GUIDE : undefined
+          }
+          onRetry={errorState === 'notFound' ? undefined : () => refetch()}
+        />
+      )}
+
+      {!hasError && (
         <Flex
-          flexDirection="row"
+          as="figure"
+          flexDirection="column"
           justifyContent="center"
           alignItems="center"
-          gap="40px"
+          mb="40px"
         >
-          {(cardList ?? []).slice(0, pickupCards).map((card: CardType) => (
-            <Box key={card.id}>
-              <TarotFlipCard
-                imageSrc={card.src}
-                setFlipCount={setFlipCount}
-                isDescription={isDescription}
-                isMobile={isMobile}
-                category={cardsData?.category}
-              />
-            </Box>
-          ))}
+          {!isDescription && (
+            <Lottie
+              // 로티 JSON(6.8MB)을 번들에 굽지 않고 public 정적 파일을 런타임 로드
+              path={cardBackAnimationPath}
+              style={{ width: '360px', height: '130px' }}
+              play
+              loop={false}
+              speed={2}
+              onClick={handleClickCardList}
+            />
+          )}
+          <Flex
+            flexDirection="row"
+            justifyContent="center"
+            alignItems="center"
+            gap="40px"
+          >
+            {(cardList ?? []).slice(0, pickupCards).map((card: CardType) => (
+              <Box key={card.id}>
+                <TarotFlipCard
+                  imageSrc={card.src}
+                  setFlipCount={setFlipCount}
+                  isDescription={isDescription}
+                  isMobile={isMobile}
+                  category={cardsData?.category ?? ''}
+                />
+              </Box>
+            ))}
+          </Flex>
         </Flex>
-      </Flex>
+      )}
+
+      {isFetching && isGenerating && (
+        <Text
+          color="#D6BDFF"
+          style={textStyles.Regular_16}
+          textAlign="center"
+          mb="24px"
+        >
+          결과를 만들고 있습니다... 잠시만 기다려 주세요.
+        </Text>
+      )}
 
       {pickupCards >= 3 && flipCount < 3 && (
         <Button
@@ -142,14 +173,14 @@ const TarotCheckingCards = () => {
                   color="#FFF"
                   mb="16px"
                 >
-                  {cardsData.title}
+                  {cardsData?.title}
                 </Text>
                 <Text
                   style={textStyles.Regular_16}
                   whiteSpace="pre-line"
                   color="#FFF"
                 >
-                  {cardsData.cardDescription}
+                  {cardsData?.cardDescription}
                 </Text>
               </Box>
             </Flex>

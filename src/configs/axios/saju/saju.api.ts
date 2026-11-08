@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toResultError } from '@/configs/axios/resultError';
 
 export async function postSajuSelect(userSelect: {}) {
   try {
@@ -36,6 +37,6 @@ export async function getCards(taskId: string) {
 
     return res.data;
   } catch (error) {
-    throw new Error('Failed to fetch data');
+    throw toResultError(error);
   }
 }

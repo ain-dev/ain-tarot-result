@@ -13,16 +13,6 @@ const nextConfig = {
       },
       // Result API host (NEXT_PUBLIC_API_BASE_URL) static files such as QR images.
       { protocol: 'https', hostname: 'ain-tarot.kr' },
-      // Previously allowed hosts, kept for compatibility.
-      {
-        protocol: 'https',
-        hostname: '079ef30d9d4760b7b5ee02b920e58155.r2.cloudflarestorage.com',
-      },
-      {
-        protocol: 'https',
-        hostname: '5ae7b9223ead1b8df22cc8a8f0bd7579.r2.cloudflarestorage.com',
-      },
-      { protocol: 'https', hostname: 'picsum.photos' },
       // Kiosk-internal docker hostname (DOCKER_BACKEND_URL); unreachable from
       // Vercel, kept only so local docker setups keep working.
       { protocol: 'http', hostname: 'backend' },

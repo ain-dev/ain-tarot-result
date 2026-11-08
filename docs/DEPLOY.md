@@ -68,9 +68,13 @@
   키오스크 등록(`/kiosk/register`, 지점명 + 공인 IP — `saju_tarot/__init__.py:78`)을 하는 그 중앙서버입니다.
 - 중앙서버의 공개 OpenAPI(`https://ain-tarot.kr/openapi.json`)에 있는 결과 조회 라우트는
   `GET /api/saju/result/{id}`, `GET /api/tarot/result/{id}` **두 개뿐**이고 `couple`은 없습니다.
-- **중앙서버 코드는 `C:\Users\minid\Desktop\ain\project` 에 없습니다.** 키오스크 백엔드에는
-  결과를 중앙서버로 올리는 코드가 없으므로, 중앙서버가 등록된 키오스크 공인 IP로 **프록시**하는
-  구조로 **추정**합니다(오류 문구 `Data Not Found`, `STT Not Found` 가 키오스크 백엔드에 없는 문구).
+- **중앙서버 코드는 접근 가능한 어느 저장소에도 없습니다**(ain-com 4개, ain-dev, 전임자 개인 계정 전체 확인, 2026-11-08).
+- 결과 전달 구조(2026-11-08 정정): 이전에 적은 "중앙서버가 키오스크 공인 IP로 프록시"는 근거가 약해 철회합니다.
+  증거상 **키오스크와 중앙서버가 같은 Postgres(중앙 NCP, 키오스크 `.env` 의 `POSTGRES_HOST`)를 공유**하는 구조일
+  가능성이 높습니다. 결과 테이블의 `kiosk_id` 가 중앙 `/kiosk/register` 가 발급한 id를 FK로 참조하고
+  (`models.py`), 키오스크가 중앙에 호출하는 것은 `/kiosk/register`·`/api_key/*` 뿐입니다.
+  `STT Not Found` 는 키오스크 타로 조회가 보는 `speech_to_text` 에 대응합니다 → 중앙서버는 키오스크 백엔드 코드를
+  줄여 만든 것으로 보입니다. 매장 compose가 실제로 이 DB를 쓰는지는 미확인입니다.
 
 ### 커플궁합 라우트 프로브 (2026-10-31, GET, 인증 없음)
 
@@ -79,6 +83,11 @@
 | `GET /api/couple/result/00000000-…` | 404 `{"detail":"Not Found"}` | FastAPI 기본 404 = **라우트 없음** |
 | `GET /api/saju/result/00000000-…` | 404 `{"detail":"Data Not Found"}` | 라우트 있음, id 없음 |
 | `GET /api/tarot/result/00000000-…` | 404 `{"detail":"STT Not Found"}` | 라우트 있음, id 없음 |
+| `OPTIONS /api/tarot/result/…`, `/api/saju/result/…` (2026-11-08) | 405 `allow: GET` | 경로 등록됨(메서드만 불일치) |
+| `OPTIONS /api/couple/result/…` (2026-11-08) | 404 | **어떤 메서드로도 경로 미등록** (id와 무관한 결정적 근거) |
+
+운영 결과 웹(main `dc63a20`)의 커플 번들(`app/couple/checking/[id]/page-*.js`)이 실제로 부르는 주소도
+`"https://ain-tarot.kr/api","/couple/result/"` 로 확인했습니다(2026-11-08). rewrites·middleware·API 라우트는 없습니다.
 
 → **커플궁합 QR 결과 페이지는 중앙서버에 `/api/couple/result/{id}` 가 배포되기 전까지 동작할 수 없습니다.**
   (`HANDOFF.md` §3-4와 일치. 프론트 쪽은 418 폴링·404 안내까지 준비 완료.)
@@ -117,7 +126,8 @@ vercel deploy --scope ain-dev-132c7931   # --prod 를 붙이지 않으면 Previe
 ## 6. 확인이 필요한 것 (사내 질문)
 
 1. 중앙서버(`ain-tarot.kr`)의 코드 저장소·담당자·배포 방법은? `/api/couple/result/{id}` 추가 일정은?
-2. 중앙서버가 결과를 어떻게 가져오나요? (키오스크 공인 IP로 프록시? 별도 동기화?) id → 키오스크 매핑 방식은?
+2. 운영 키오스크의 DB가 중앙 NCP Postgres 공유가 맞나요? 중앙 DB에 `couple_user_input`·`couple_desc_res` 테이블이 있나요?
+   (공유가 맞다면 모든 키오스크 `.env` 에 중앙 DB 접속 정보가 있는 구조라 보안 검토 대상입니다.)
 3. Vercel 프로젝트의 Node.js 버전, Install/Build Command 오버라이드, Preview 환경의 `NEXT_PUBLIC_API_BASE_URL` 값.
 4. Vercel 함수 리전이 `iad1`(미국)인 것은 의도인가요? 손님이 한국이라 `icn1` 이 자연스럽습니다(페이지 셸 SSR만 해당).
 5. 중앙서버 OpenAPI가 공개돼 있고, 스펙상 `/api/api_key/*`·`/api/kiosk/*` 에 인증 스킴이 없습니다 → `docs/security/2026-10.md` 참고.

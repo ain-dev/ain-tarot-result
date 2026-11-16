@@ -12,6 +12,7 @@ import { Box, Text, Flex, Spinner } from '@chakra-ui/react';
 import { hahmlet } from '@/generated/fonts/fonts';
 import textStyles from '@/configs/textStyles';
 import { breakAfterSentences } from '@/utils/textFormat';
+import LuckyLine from '@/components/common/LuckyLine';
 
 interface CoupleCardProfile {
   cardId: number;
@@ -26,6 +27,8 @@ interface CoupleResult {
   compat: string;
   tips: string;
   compatTtsUrl?: string;
+  luckyPlace?: string | null;
+  luckyNumber?: string | null;
 }
 
 // 모바일(QR 스캔)로 들어오는 커플궁합 결과 화면. 키오스크 화면(mind-tarot-frontend-master
@@ -306,6 +309,10 @@ const CoupleCheckingResult = () => {
                 style={{ width: '100%', marginTop: '16px' }}
               />
             )}
+            <LuckyLine
+              place={resultData.luckyPlace}
+              number={resultData.luckyNumber}
+            />
           </Box>
         </Flex>
       )}

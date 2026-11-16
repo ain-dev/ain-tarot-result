@@ -19,6 +19,7 @@ import { hahmlet } from '@/generated/fonts/fonts';
 import { CareerIcon, MoneyIcon, HealthyIcon } from '@/generated/CustomIcon';
 import { SAJU_RESULT_ENDING } from '@/constants';
 import textStyles from '@/configs/textStyles';
+import LuckyLine from '@/components/common/LuckyLine';
 
 const SajuCheckingCards = () => {
   const [isDescription, setIsDescription] = useState(false);
@@ -172,6 +173,10 @@ const SajuCheckingCards = () => {
                 </Text>
               </Box>
             </Flex>
+            <LuckyLine
+              place={cardsData?.luckyPlace}
+              number={cardsData?.luckyNumber}
+            />
           </Flex>
         </Box>
       )}

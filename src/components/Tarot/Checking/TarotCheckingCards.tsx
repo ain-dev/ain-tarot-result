@@ -21,6 +21,7 @@ import { CardType, TarotResult } from '@/model/cards';
 import { Box, Text, Flex, Button, Spinner } from '@chakra-ui/react';
 import { hahmlet } from '@/generated/fonts/fonts';
 import textStyles from '@/configs/textStyles';
+import LuckyLine from '@/components/common/LuckyLine';
 
 const TarotCheckingCards = () => {
   const [isDescription, setIsDescription] = useState(false);
@@ -188,6 +189,10 @@ const TarotCheckingCards = () => {
                 </Text>
               </Box>
             </Flex>
+            <LuckyLine
+              place={cardsData?.luckyPlace}
+              number={cardsData?.luckyNumber}
+            />
           </Flex>
         </Box>
       )}
